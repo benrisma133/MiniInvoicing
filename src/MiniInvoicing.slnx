@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="MiniInvoicing.Api/MiniInvoicing.Api.csproj" />
+  <Project Path="MiniInvoicing.Application/MiniInvoicing.Application.csproj" />
+  <Project Path="MiniInvoicing.Domain/MiniInvoicing.Domain.csproj" />
+  <Project Path="MiniInvoicing.Infrastructure/MiniInvoicing.Infrastructure.csproj" />
+</Solution>
