@@ -1,17 +1,18 @@
 ﻿namespace MiniInvoicing.Domain.Entities;
 
-public class Invoice
+public partial class Invoice
 {
-    private readonly List<InvoiceItem> _items = new();
+    public Guid Id { get; set; }
 
-    public Guid Id { get; private set; }
-    public string InvoiceNumber { get; private set; } = string.Empty;
-    public DateTime IssueDate { get; private set; }
-    public decimal TotalAmount { get; private set; }
-    public decimal VatAmount { get; private set; }
-    public decimal TotalWithVat { get; private set; }
+    public string InvoiceNumber { get; set; } = null!;
+    public DateTime IssueDate { get; set; }
+    public decimal TotalAmount { get; set; }
+    public decimal VatAmount { get; set; }
+    public decimal TotalWithVat { get; set; }
 
-    public IReadOnlyCollection<InvoiceItem> Items => _items.AsReadOnly();
+    public virtual ICollection<InvoiceItem> Items { get; set; } = new List<InvoiceItem>();
+
+    public Invoice() { }
 
     public Invoice(string invoiceNumber)
     {
@@ -25,15 +26,18 @@ public class Invoice
 
     public void AddItem(Guid productId, int quantity, decimal unitPrice, decimal vatRate = 0.20m)
     {
-        var item = new InvoiceItem(productId, quantity, unitPrice);
-        _items.Add(item);
+        var item = new InvoiceItem(productId, quantity, unitPrice)
+        {
+            InvoiceId = this.Id
+        };
+        Items.Add(item);
 
         RecalculateTotals(vatRate);
     }
 
     private void RecalculateTotals(decimal vatRate)
     {
-        TotalAmount = _items.Sum(x => x.LineTotal);
+        TotalAmount = Items.Sum(x => x.LineTotal);
         VatAmount = TotalAmount * vatRate;
         TotalWithVat = TotalAmount + VatAmount;
     }
