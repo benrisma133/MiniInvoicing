@@ -1,20 +1,23 @@
 ﻿namespace MiniInvoicing.Domain.Entities;
 
-public class Product
+public partial class Product
 {
-    public Guid Id { get; private set; }
-    public string Name { get; private set; } = string.Empty;
-    public decimal Price { get; private set; }
-    public int StockQuantity { get; private set; }
+    public Guid Id { get; set; }
+
+    public string Name { get; set; } = null!;
+    public decimal Price { get; set; }
+    public int StockQuantity { get; set; }
+
+    public virtual ICollection<InvoiceItem> InvoiceItems { get; set; } = new List<InvoiceItem>();
+
+    public Product() { }
 
     public Product(string name, decimal price, int stockQuantity)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Product name cannot be empty.");
-
+            throw new ArgumentException("Product name is required.");
         if (price <= 0)
             throw new ArgumentException("Price must be greater than zero.");
-
         if (stockQuantity < 0)
             throw new ArgumentException("Stock quantity cannot be negative.");
 
@@ -24,30 +27,27 @@ public class Product
         StockQuantity = stockQuantity;
     }
 
-    public void DeductStock(int quantity)
-    {
-        if (quantity <= 0)
-            throw new ArgumentException("Quantity to deduct must be greater than zero.");
-
-        if (quantity > StockQuantity)
-            throw new InvalidOperationException($"Insufficient stock for '{Name}'. Available: {StockQuantity}.");
-
-        StockQuantity -= quantity;
-    }
-
     public void UpdateDetails(string name, decimal price, int stockQuantity)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Product name cannot be empty.");
-
+            throw new ArgumentException("Product name is required.");
         if (price <= 0)
             throw new ArgumentException("Price must be greater than zero.");
-
         if (stockQuantity < 0)
             throw new ArgumentException("Stock quantity cannot be negative.");
 
         Name = name;
         Price = price;
         StockQuantity = stockQuantity;
+    }
+
+    public void DeductStock(int quantity)
+    {
+        if (quantity <= 0)
+            throw new ArgumentException("Quantity must be positive.");
+        if (StockQuantity < quantity)
+            throw new InvalidOperationException("Insufficient stock.");
+
+        StockQuantity -= quantity;
     }
 }
