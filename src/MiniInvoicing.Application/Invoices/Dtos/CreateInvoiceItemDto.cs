@@ -2,5 +2,6 @@
 
 public record CreateInvoiceItemDto(
     Guid ProductId,
-    int Quantity
+    int Quantity,
+    decimal UnitPrice
 );

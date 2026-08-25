@@ -19,6 +19,7 @@ public static class DependencyInjection
 
         // 2. تسجيل الـ Repositories (هنا كربطو الـ Interface بالـ Implementation)
         services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 
         return services;
     }

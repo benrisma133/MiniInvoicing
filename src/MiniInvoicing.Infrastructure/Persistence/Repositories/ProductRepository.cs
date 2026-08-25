@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MiniInvoicing.Application.Common.Interfaces;
+using MiniInvoicing.Application.DTOs;
 using MiniInvoicing.Domain.Entities;
 using MiniInvoicing.Domain.Enums.Product;
 
@@ -61,5 +62,6 @@ namespace MiniInvoicing.Infrastructure.Persistence.Repositories
 
             return affectedRows > 0 ? enProductSaveResult.Saved : enProductSaveResult.Failed;
         }
+
     }
 }

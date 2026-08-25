@@ -1,4 +1,5 @@
-﻿using MiniInvoicing.Domain.Entities;
+﻿using MiniInvoicing.Application.DTOs;
+using MiniInvoicing.Domain.Entities;
 using MiniInvoicing.Domain.Enums.Product;
 
 namespace MiniInvoicing.Application.Common.Interfaces;
