@@ -1,11 +1,15 @@
 ﻿using MiniInvoicing.Domain.Entities;
-using MiniInvoicing.Domain.Enums.Invoice;
 
 namespace MiniInvoicing.Application.Common.Interfaces;
 
 public interface IInvoiceRepository
 {
-    Task<Invoice?> GetByIdAsync(Guid id);
-    Task<IEnumerable<Invoice>> GetAllAsync();
-    Task<enInvoiceSaveResult> AddAsync(Invoice invoice);
+    Task CreateInvoiceWithStockUpdateAsync(
+        Invoice invoice,
+        Dictionary<Guid, int> requestedItems,
+        CancellationToken cancellationToken = default);
+
+    Task<Invoice?> GetByIdWithItemsAsync(Guid id, CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<Invoice>> GetAllAsync(CancellationToken cancellationToken = default);
 }

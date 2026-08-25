@@ -9,17 +9,15 @@ namespace MiniInvoicing.Application.Invoices.Services;
 public class InvoiceService : IInvoiceService
 {
     private readonly IInvoiceRepository _invoiceRepository;
-    private readonly IProductRepository _productRepository;
 
-    public InvoiceService(IInvoiceRepository invoiceRepository, IProductRepository productRepository)
+    public InvoiceService(IInvoiceRepository invoiceRepository)
     {
         _invoiceRepository = invoiceRepository;
-        _productRepository = productRepository;
     }
 
     public async Task<InvoiceDto?> GetByIdAsync(Guid id)
     {
-        var invoice = await _invoiceRepository.GetByIdAsync(id);
+        var invoice = await _invoiceRepository.GetByIdWithItemsAsync(id);
         if (invoice == null) return null;
 
         return MapToDto(invoice);
@@ -36,39 +34,41 @@ public class InvoiceService : IInvoiceService
         if (dto.Items == null || !dto.Items.Any())
             return enInvoiceSaveResult.EmptyItems;
 
+        var requestedItems = dto.Items
+            .GroupBy(i => i.ProductId)
+            .ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
+
         var invoice = new Invoice(dto.InvoiceNumber);
 
         foreach (var itemDto in dto.Items)
         {
-            var product = await _productRepository.GetByIdAsync(itemDto.ProductId);
-            if (product == null)
-                return enInvoiceSaveResult.ProductNotFound;
-
-            try
-            {
-                // اقتطاع المخزون من الـ Domain Entity
-                product.DeductStock(itemDto.Quantity);
-            }
-            catch (InvalidOperationException)
-            {
-                return enInvoiceSaveResult.InsufficientStock;
-            }
-
-            // إضافة البند للحاسبة
-            invoice.AddItem(product.Id, itemDto.Quantity, product.Price);
-
-            // تحديث المخزون في الـ Repository
-            await _productRepository.UpdateAsync(product);
+            invoice.AddItem(itemDto.ProductId, itemDto.Quantity, itemDto.UnitPrice);
         }
 
-        return await _invoiceRepository.AddAsync(invoice);
+        try
+        {
+            await _invoiceRepository.CreateInvoiceWithStockUpdateAsync(invoice, requestedItems);
+            return enInvoiceSaveResult.Saved;
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("was not found"))
+        {
+            return enInvoiceSaveResult.ProductNotFound;
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("insufficient stock"))
+        {
+            return enInvoiceSaveResult.InsufficientStock;
+        }
+        catch
+        {
+            return enInvoiceSaveResult.Failed;
+        }
     }
 
     private static InvoiceDto MapToDto(Invoice invoice)
     {
-        var items = invoice.Items.Select(item =>
+        var items = invoice.Items?.Select(item =>
             new InvoiceItemDto(item.Id, item.ProductId, item.Quantity, item.UnitPrice, item.LineTotal)
-        ).ToList();
+        ).ToList() ?? new List<InvoiceItemDto>();
 
         return new InvoiceDto(
             invoice.Id,
