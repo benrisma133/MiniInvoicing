@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MiniInvoicing.Application.Common.Interfaces;
 using MiniInvoicing.Domain.Entities;
+using MiniInvoicing.Domain.Enums.Product;
 
 namespace MiniInvoicing.Infrastructure.Persistence.Repositories;
 
@@ -53,10 +54,17 @@ public class InvoiceRepository : IInvoiceRepository
             }
 
             // 3. Deduct stock (EF Core Change Tracker records modifications automatically)
+            // 3. Deduct stock using the returned ProductValidationResult
             foreach (var product in productsToUpdate)
             {
                 int qty = requestedItems[product.Id];
-                product.DeductStock(qty);
+
+                var result = product.DeductStock(qty);
+                if (result != enProductOperationResult.Success)
+                {
+                    // Handle failure if needed, or throw to rollback the transaction
+                    throw new InvalidOperationException($"Failed to deduct stock for '{product.Name}': {result}");
+                }
             }
 
             // 4. Add invoice entity

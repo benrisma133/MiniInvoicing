@@ -1,9 +1,10 @@
-﻿namespace MiniInvoicing.Domain.Entities;
+﻿using MiniInvoicing.Domain.Enums.Product;
+
+namespace MiniInvoicing.Domain.Entities;
 
 public partial class Product
 {
     public Guid Id { get; set; }
-
     public string Name { get; set; } = null!;
     public decimal Price { get; set; }
     public int StockQuantity { get; set; }
@@ -14,40 +15,49 @@ public partial class Product
 
     public Product(string name, decimal price, int stockQuantity)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Product name is required.");
-        if (price <= 0)
-            throw new ArgumentException("Price must be greater than zero.");
-        if (stockQuantity < 0)
-            throw new ArgumentException("Stock quantity cannot be negative.");
-
         Id = Guid.NewGuid();
         Name = name;
         Price = price;
         StockQuantity = stockQuantity;
     }
 
-    public void UpdateDetails(string name, decimal price, int stockQuantity)
+    public static enProductOperationResult Validate(string name, decimal price, int stockQuantity)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Product name is required.");
+            return enProductOperationResult.InvalidName;
+
         if (price <= 0)
-            throw new ArgumentException("Price must be greater than zero.");
+            return enProductOperationResult.InvalidPrice;
+
         if (stockQuantity < 0)
-            throw new ArgumentException("Stock quantity cannot be negative.");
+            return enProductOperationResult.InvalidStockQuantity;
+
+        return enProductOperationResult.Success;
+    }
+
+    public enProductOperationResult UpdateDetails(string name, decimal price, int stockQuantity)
+    {
+        var validation = Validate(name, price, stockQuantity);
+        if (validation != enProductOperationResult.Success)
+            return validation;
 
         Name = name;
         Price = price;
         StockQuantity = stockQuantity;
+
+        return enProductOperationResult.Success;
     }
 
-    public void DeductStock(int quantity)
+    public enProductOperationResult DeductStock(int quantity)
     {
         if (quantity <= 0)
-            throw new ArgumentException("Quantity must be positive.");
+            return enProductOperationResult.InvalidDeductQuantity;
+
         if (StockQuantity < quantity)
-            throw new InvalidOperationException("Insufficient stock.");
+            return enProductOperationResult.InsufficientStock;
 
         StockQuantity -= quantity;
+
+        return enProductOperationResult.Success;
     }
 }
