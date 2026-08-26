@@ -7,7 +7,7 @@ public interface IProductService
 {
     Task<ProductDto?> GetByIdAsync(Guid id);
     Task<IEnumerable<ProductDto>> GetAllAsync();
-    Task<enProductSaveResult> CreateAsync(CreateProductDto dto);
-    Task<enProductSaveResult> UpdateAsync(UpdateProductDto dto);
-    Task<enProductDeleteResult> DeleteAsync(Guid id);
+    Task<(enProductOperationResult Result, ProductDto? Product)> CreateAsync(CreateProductDto dto);
+    Task<(enProductOperationResult Result, ProductDto? Product)> UpdateAsync(UpdateProductDto dto);
+    Task<(enProductDeleteResult Result, string? DeletedProductName)> DeleteAsync(Guid id);
 }

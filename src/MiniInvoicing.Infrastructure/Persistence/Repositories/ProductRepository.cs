@@ -15,16 +15,16 @@ namespace MiniInvoicing.Infrastructure.Persistence.Repositories
             _context = context;
         }
 
-        public async Task<enProductSaveResult> AddAsync(Product product)
+        public async Task<enProductOperationResult> AddAsync(Product product)
         {
             if (await ExistsByNameAsync(product.Name))
-                return enProductSaveResult.DuplicateName;
+                return enProductOperationResult.DuplicateName;
 
             await _context.Products.AddAsync(product);
 
             var affectedRow = await _context.SaveChangesAsync();
 
-            return affectedRow > 0 ? enProductSaveResult.Saved : enProductSaveResult.Failed;
+            return affectedRow > 0 ? enProductOperationResult.Success : enProductOperationResult.Failed;
 
         }
 
@@ -55,12 +55,12 @@ namespace MiniInvoicing.Infrastructure.Persistence.Repositories
             return await _context.Products.FindAsync(id);
         }
 
-        public async Task<enProductSaveResult> UpdateAsync(Product product)
+        public async Task<enProductOperationResult> UpdateAsync(Product product)
         {
             _context.Products.Update(product);
             var affectedRows = await _context.SaveChangesAsync();
 
-            return affectedRows > 0 ? enProductSaveResult.Saved : enProductSaveResult.Failed;
+            return affectedRows > 0 ? enProductOperationResult.Success : enProductOperationResult.Failed;
         }
 
     }

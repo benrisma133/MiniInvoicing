@@ -9,7 +9,7 @@ public interface IProductRepository
     Task<Product?> GetByIdAsync(Guid id);
     Task<IEnumerable<Product>> GetAllAsync();
     Task<bool> ExistsByNameAsync(string name);
-    Task<enProductSaveResult> AddAsync(Product product);
-    Task<enProductSaveResult> UpdateAsync(Product product);
+    Task<enProductOperationResult> AddAsync(Product product);
+    Task<enProductOperationResult> UpdateAsync(Product product);
     Task<enProductDeleteResult> DeleteAsync(Guid id);
 }
