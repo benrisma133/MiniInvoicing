@@ -7,6 +7,7 @@ public enum enProductOperationResult
     InvalidPrice,
     InvalidStockQuantity,
     InvalidDeductQuantity,
+    InvalidRestoreQuantity,
     InsufficientStock,
     DuplicateName,
     NotFound,

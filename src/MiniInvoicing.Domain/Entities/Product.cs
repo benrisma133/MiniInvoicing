@@ -60,4 +60,15 @@ public partial class Product
 
         return enProductOperationResult.Success;
     }
+
+    public enProductOperationResult RestoreStock(int quantity)
+    {
+        if (quantity <= 0)
+            return enProductOperationResult.InvalidRestoreQuantity; // أو إرجاع إيرور مناسب فـ Enum
+
+        StockQuantity += quantity;
+
+        return enProductOperationResult.Success;
+    }
+
 }
