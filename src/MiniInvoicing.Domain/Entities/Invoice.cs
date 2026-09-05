@@ -1,9 +1,10 @@
-﻿namespace MiniInvoicing.Domain.Entities;
+﻿using MiniInvoicing.Domain.Enums.Invoice;
+
+namespace MiniInvoicing.Domain.Entities;
 
 public partial class Invoice
 {
     public Guid Id { get; set; }
-
     public string InvoiceNumber { get; set; } = null!;
     public DateTime IssueDate { get; set; }
     public decimal TotalAmount { get; set; }
@@ -16,12 +17,17 @@ public partial class Invoice
 
     public Invoice(string invoiceNumber)
     {
-        if (string.IsNullOrWhiteSpace(invoiceNumber))
-            throw new ArgumentException("Invoice number is required.");
-
         Id = Guid.NewGuid();
         InvoiceNumber = invoiceNumber;
         IssueDate = DateTime.UtcNow;
+    }
+
+    public static enInvoiceOperationResult Validate(string invoiceNumber)
+    {
+        if (string.IsNullOrWhiteSpace(invoiceNumber))
+            return enInvoiceOperationResult.InvalidInvoiceNumber;
+
+        return enInvoiceOperationResult.Success;
     }
 
     public void AddItem(Guid productId, int quantity, decimal unitPrice, decimal vatRate = 0.20m)
@@ -35,7 +41,30 @@ public partial class Invoice
         RecalculateTotals(vatRate);
     }
 
-    private void RecalculateTotals(decimal vatRate)
+    public void RemoveItem(Guid itemId, decimal vatRate = 0.20m)
+    {
+        var item = Items.FirstOrDefault(i => i.Id == itemId);
+        if (item != null)
+        {
+            Items.Remove(item);
+            RecalculateTotals(vatRate);
+        }
+    }
+
+    public void UpdateItemDetails(Guid itemId, int newQuantity, decimal newUnitPrice, decimal vatRate = 0.20m)
+    {
+        var item = Items.FirstOrDefault(i => i.Id == itemId);
+        if (item != null)
+        {
+            item.Quantity = newQuantity;
+            item.UnitPrice = newUnitPrice;
+            item.LineTotal = newQuantity * newUnitPrice;
+
+            RecalculateTotals(vatRate);
+        }
+    }
+
+    public void RecalculateTotals(decimal vatRate = 0.20m)
     {
         TotalAmount = Items.Sum(x => x.LineTotal);
         VatAmount = TotalAmount * vatRate;
